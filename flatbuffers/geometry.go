@@ -45,12 +45,10 @@ func GeometryFromFlat(flatGeometry *flat.Geometry) (*Geometry, error) {
 
 		geometry.GeometryType = flatGeometry.Type()
 
-		for _, geom := range VectorFromFlat(flatGeometry.PartsLength(), flatGeometry.Parts) {
-			part, err := GeometryFromFlat(&geom)
-			if err != nil {
-				return err
-			}
-			geometry.Parts = append(geometry.Parts, *part)
+		if parts, err := VectorFromFlat(flatGeometry.PartsLength(), flatGeometry.Parts, GeometryFromFlat); err != nil {
+			return err
+		} else {
+			geometry.Parts = parts
 		}
 
 		return nil

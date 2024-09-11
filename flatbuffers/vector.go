@@ -4,18 +4,25 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-type VectorElementsFunc[T any] func(*T, int) bool
+type FromFlatFunc[T any, FlatT any] func(*FlatT) (*T, error)
 
-func VectorFromFlat[T any](numElems int, elemsFunc VectorElementsFunc[T]) []T {
+type FlatGetElementAtFunc[T any] func(*T, int) bool
+
+func VectorFromFlat[T any, FlatT any](numElems int, flatElemFunc FlatGetElementAtFunc[FlatT], fromFlatFunc FromFlatFunc[T, FlatT]) ([]T, error) {
 	var elems []T
+
 	for i := 0; i < numElems; i++ {
-		var elem T
-		if elemsFunc(&elem, i) {
-			elems = append(elems, elem)
+		var flatElem FlatT
+		if flatElemFunc(&flatElem, i) {
+			elem, err := fromFlatFunc(&flatElem)
+			if err != nil {
+				return nil, err
+			}
+			elems = append(elems, *elem)
 		}
 	}
 
-	return elems
+	return elems, nil
 }
 
 type StartVectorFunc func(builder *flatbuffers.Builder, numElems int) (offset flatbuffers.UOffsetT)

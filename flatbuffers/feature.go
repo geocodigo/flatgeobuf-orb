@@ -26,12 +26,10 @@ func FeatureFromFlat(flatFeature *flat.Feature) (*Feature, error) {
 
 		feature.Properties = flatFeature.PropertiesBytes()
 
-		for _, col := range VectorFromFlat(flatFeature.ColumnsLength(), flatFeature.Columns) {
-			column, err := ColumnFromFlat(&col)
-			if err != nil {
-				return err
-			}
-			feature.Columns = append(feature.Columns, *column)
+		if cols, err := VectorFromFlat(flatFeature.ColumnsLength(), flatFeature.Columns, ColumnFromFlat); err != nil {
+			return err
+		} else {
+			feature.Columns = cols
 		}
 
 		return nil

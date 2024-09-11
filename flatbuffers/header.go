@@ -38,12 +38,10 @@ func HeaderFromFlat(flatHeader *flat.Header) (*Header, error) {
 		header.HasT = flatHeader.HasT()
 		header.HasTM = flatHeader.HasTm()
 
-		for _, col := range VectorFromFlat(flatHeader.ColumnsLength(), flatHeader.Columns) {
-			column, err := ColumnFromFlat(&col)
-			if err != nil {
-				return err
-			}
-			header.Columns = append(header.Columns, *column)
+		if cols, err := VectorFromFlat(flatHeader.ColumnsLength(), flatHeader.Columns, ColumnFromFlat); err != nil {
+			return err
+		} else {
+			header.Columns = cols
 		}
 
 		header.FeaturesCount = flatHeader.FeaturesCount()
